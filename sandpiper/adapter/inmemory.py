@@ -1,4 +1,5 @@
-from .abstract import Abstract
+from .abstract  import Abstract
+from .exception import NotSupported
 
 class InMemory(object):
     def __init__(self, storage=None):
@@ -18,3 +19,6 @@ class InMemory(object):
             return
 
         del self._storage[key]
+
+    def find(self, *args, **kwargs):
+        raise NotSupported()

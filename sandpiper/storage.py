@@ -1,5 +1,6 @@
-from .adapter import InMemory
-from .mixin   import DictionaryAccess
+from .adapter           import InMemory
+from .adapter.exception import NotSupported
+from .mixin             import DictionaryAccess
 
 class Storage(DictionaryAccess):
     def __init__(self, driver=InMemory()):
@@ -14,5 +15,8 @@ class Storage(DictionaryAccess):
     def remove(self, key):
         self.driver.remove(key)
 
-    def find(self, pattern):
-        return self.driver.find(pattern)
+    def find(self, *args, **kwargs):
+        try:
+            return self.driver.find(*args, **kwargs)
+        except NotSupported as e:
+            return []
