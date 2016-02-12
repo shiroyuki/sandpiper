@@ -1,7 +1,7 @@
 from .adapter import InMemory
 from .mixin   import DictionaryAccess
 
-class Cache(DictionaryAccess):
+class Storage(DictionaryAccess):
     def __init__(self, driver=InMemory()):
         self.driver = driver
 
