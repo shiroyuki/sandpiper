@@ -1,4 +1,4 @@
-from .adapter           import InMemory
+from .adapter.inmemory  import InMemory
 from .adapter.exception import NotSupported
 from .mixin             import DictionaryAccess
 

@@ -5,7 +5,7 @@ except:
 
 setup(
     name         = 'sandpiper',
-    version      = '0.2.3',
+    version      = '0.3.0',
     description  = 'A Generic/Extendible Key-value Store Interface Library',
     license      = 'MIT',
     author       = 'Juti Noppornpitak',

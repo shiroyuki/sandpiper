@@ -1,13 +1,14 @@
 import decimal
 import json
 
-from boto3.dynamodb.conditions import Key
+from boto3.dynamodb.conditions import Key, Attr
 
 from .abstract import Abstract
 
 
 class DynamoDB(object):
-    __primary_key     = 'identifier';
+    __primary_key     = 'identifier'; # the main identifier
+    __secondary_key   = 'search_key'; # the search key (the content is the same as the PK)
     __value_attribute = 'value';
 
     def __init__(self, storage, namespace = 'default'):
@@ -15,33 +16,36 @@ class DynamoDB(object):
         self._storage   = storage
 
     def get(self, key):
-        response = self._table().get_item(Key = {self.__primary_key: key})
+        response = self._table().get_item(Key = self._get_key(key))
 
         item = response['Item'] if 'Item' in response else None
 
         return item[self.__value_attribute] if item else None
 
     def set(self, key, value):
-        self._table().put_item(Item = self._prepare_for_setter({
-            self.__primary_key:     key,
-            self.__value_attribute: value,
-        }))
+        item = {
+            self.__value_attribute: self._prepare_for_setter(value),
+        }
+
+        item.update(self._get_key(key))
+
+        self._table().put_item(Item = item)
 
     def remove(self, key):
-        self._table().delete_item(Key = {self.__primary_key: key})
+        self._table().delete_item(Key = self._get_key(key))
 
     def find(self, begins_with=None, eq=None):
-        key_condition = None
+        criteria = {}
 
         if eq:
-            key_condition = Key(self.__primary_key).eq(eq)
+            criteria['KeyConditionExpression'] = Key(self.__primary_key).eq(eq)
         elif begins_with:
-            key_condition = Key(self.__primary_key).begins_with(begins_with)
+            criteria['FilterExpression'] = Key(self.__secondary_key).begins_with(begins_with)
 
-        if not key_condition:
-            raise ValueError('Need to define the search pattern.')
+        if not criteria:
+            raise ValueError('Need to define the criteria.')
 
-        response = self._table().query(KeyConditionExpression = key_condition)
+        response = self._table().scan(**criteria)
 
         if 'Items' not in response:
             return {}
@@ -63,16 +67,30 @@ class DynamoDB(object):
                 {
                     'AttributeName': self.__primary_key,
                     'KeyType':       'HASH',
-                }
+                },
+                {
+                    'AttributeName': self.__secondary_key,
+                    'KeyType':       'RANGE',
+                },
             ],
             AttributeDefinitions = [
                 {
                     'AttributeName': self.__primary_key,
                     'AttributeType': 'S',
-                }
+                },
+                {
+                    'AttributeName': self.__secondary_key,
+                    'AttributeType': 'S',
+                },
             ],
             ProvisionedThroughput = throughput
         )
+
+    def _get_key(self, key):
+        return {
+            self.__primary_key:   key,
+            self.__secondary_key: key,
+        }
 
     def _table_name(self):
         return self._namespace
