@@ -20,7 +20,7 @@ test-dynamodb:
 	$(PY_TEST) tests/test_dynamodb.py
 
 test-dynamodb-docker:
-	docker build -q -t $(LXC_TAG_DYNAMODB) lxc/dynamodb > /dev/null && \
+	docker build -t $(LXC_TAG_DYNAMODB) lxc/dynamodb && \
 		docker run -i -t --rm -v `pwd`:/opt:ro $(LXC_TAG_DYNAMODB)
 
 test-dynamodb-prep-db:
@@ -36,4 +36,4 @@ test-dynamodb-docker-prep-db:
 	./dynamodb_lxcinner_start > /db/output &
 
 test-dynamodb-docker-runner: test-dynamodb-docker-prep-db test-dynamodb-prep-pip test-dynamodb
-	$(PY_TEST) tests/test_dynamodb.py
+	@echo "Done"

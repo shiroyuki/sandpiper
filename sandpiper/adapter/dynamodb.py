@@ -25,7 +25,7 @@ class DynamoDB(object):
         self._table().delete_item(Key = {'key': key})
 
     def _table_name(self):
-        return 'sandpiper.cache.{}'.format(self._namespace)
+        return self._namespace
 
     def _table(self):
         return self._storage.Table(self._table_name())
