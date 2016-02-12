@@ -1,0 +1,5 @@
+base_dir=`dirname $0`/tmp
+
+java -Djava.library.path=$base_dir/DynamoDBLocal_lib \
+    -jar $base_dir/DynamoDBLocal.jar \
+    -sharedDb -inMemory
