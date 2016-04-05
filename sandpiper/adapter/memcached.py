@@ -41,9 +41,10 @@ def deserializer(key, value, flags):
     raise Exception("Unknown serialization format")
 
 class Memcached(Abstract):
-    def __init__(self, storage = None, namespace = None):
+    def __init__(self, storage = None, namespace = None, delimiter = ':'):
         self._storage   = storage
         self._namespace = namespace or ''
+        self._delimiter = delimiter
 
     def get(self, key):
         actual_key = self._actual_key(key)
@@ -67,4 +68,4 @@ class Memcached(Abstract):
         if not self._namespace:
             return key
 
-        return '{}-{}'.format(self._namespace, key)
+        return '{}{}{}'.format(self._namespace, self._delimiter, key)

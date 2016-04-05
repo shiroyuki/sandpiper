@@ -6,7 +6,8 @@ A simple generic key-value store interface library.
 
 * Python 3.4 or newer
 * **boto3** for AWS DynamoDB (optional)
-* **redis** for AWS DynamoDB (optional, future)
+* **pymemcache** for Memcached (optional)
+* **redis** for Redis (optional, future)
 * **pymongo** for MongoDB (optional, future)
 
 *Note: this may work with Python 2.7 but it will not be tested.*
@@ -17,10 +18,15 @@ Run `pip3 install sandpiper`.
 
 ## Example
 
+### Set up the driver
+
+First of all, let's set up the adapter.
+
+#### For DynamoDB
+
 ```python
 import boto3
 
-from sandpiper         import Storage
 from sandpiper.adapter import DynamoDB
 
 ddb = boto3.resource(
@@ -34,6 +40,27 @@ ddb = boto3.resource(
 )
 
 driver = DynamoDB(ddb)
+```
+
+#### For Memcached
+
+```python
+from sandpiper.adapter.memcached import Memcached, get_default_client
+
+connection_list = [
+    ('c1.shiroyuki.com', 11211),
+    ('c2.shiroyuki.com', 11211),
+    # ...
+]
+
+client = get_default_client(connection_list)
+driver = Memcached(client, namespace = 'default', delimiter = ':')
+```
+
+### How to use it
+
+```python
+from sandpiper import Storage
 
 storage = Storage(driver)
 
@@ -54,6 +81,7 @@ del storage['user.1']
 
 * In-memory/Python's built-in dictionary type (default)
 * AWS DynamoDB
+* Memcached
 
 ## Soon-to-be Supported Storage Types
 
