@@ -6,7 +6,7 @@ from sandpiper.adapter.dynamodb import DynamoDB
 
 logging.getLogger('boto3').setLevel(logging.CRITICAL)
 
-class Unit(StandardTests):
+class FunctionalDefault(StandardTests):
     def get_driver(self):
         self.ddb = boto3.resource(
             'dynamodb',

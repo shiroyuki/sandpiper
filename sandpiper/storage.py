@@ -1,10 +1,10 @@
-from .adapter.inmemory  import InMemory
-from .adapter.exception import NotSupported
-from .mixin             import DictionaryAccess
+from .adapter.abstract import NotSupported
+from .adapter.inmemory import InMemory
+from .mixin            import DictionaryAccess
 
 class Storage(DictionaryAccess):
-    def __init__(self, driver=InMemory()):
-        self.driver = driver
+    def __init__(self, driver = None):
+        self.driver = driver or InMemory()
 
     def get(self, key):
         return self.driver.get(key)

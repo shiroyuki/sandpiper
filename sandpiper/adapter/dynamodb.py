@@ -1,12 +1,14 @@
 import decimal
 import json
 
-from boto3.dynamodb.conditions import Key, Attr
+try:
+    from boto3.dynamodb.conditions import Key, Attr
+except ImportError as e:
+    raise ImportError('Failed to import "boto3" ({})'.format(e))
 
 from .abstract import Abstract
 
-
-class DynamoDB(object):
+class DynamoDB(Abstract):
     __primary_key     = 'identifier'; # the main identifier
     __secondary_key   = 'search_key'; # the search key (the content is the same as the PK)
     __value_attribute = 'value';

@@ -1,7 +1,7 @@
-from .abstract  import Abstract
-from .exception import NotSupported
+from .abstract import Abstract
+from .abstract import NotSupported
 
-class InMemory(object):
+class InMemory(Abstract):
     def __init__(self, storage=None):
         self._storage = storage or {}
 

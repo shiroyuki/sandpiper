@@ -1,0 +1,3 @@
+nose
+boto3
+pymemcache

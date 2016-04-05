@@ -2,6 +2,8 @@ PY=python3
 TEST_FLAGS=-f
 PY_TEST=nosetests -x -w .
 LXC_TAG_DYNAMODB=sandpiper.test.dynamodb
+LXC_TAG_MEMCACHED=memcached:latest
+LXC_NAME_MEMCACHED=sandpiper.memcached
 
 package:
 	$(PY) setup.py sdist
@@ -19,9 +21,12 @@ test-inmemory:
 test-dynamodb:
 	$(PY_TEST) tests/test_dynamodb.py
 
+test-memcached:
+	$(PY_TEST) tests/test_memcached.py
+
 test-dynamodb-docker:
 	docker build -t $(LXC_TAG_DYNAMODB) lxc/dynamodb && \
-		docker run -i -t --rm -v `pwd`:/opt:ro $(LXC_TAG_DYNAMODB)
+		docker run -i -t --rm --privileged -v `pwd`:/opt:ro $(LXC_TAG_DYNAMODB)
 
 test-dynamodb-prep-db:
 	mkdir -p tmp
@@ -30,10 +35,16 @@ test-dynamodb-prep-db:
 		tar xzf dynamodb_local_latest.tar.gz && \
 
 test-dynamodb-prep-pip:
-	pip3 install -q --no-cache-dir --disable-pip-version-check -r requirements.txt
+	pip3 install -q --no-cache-dir --disable-pip-version-check -r requirements-test.txt
 
 test-dynamodb-docker-prep-db:
 	./dynamodb_lxcinner_start > /db/output &
 
 test-dynamodb-docker-runner: test-dynamodb-docker-prep-db test-dynamodb-prep-pip test-dynamodb
 	@echo "Done"
+
+test-memcached-docker:
+	@docker rm -f $(LXC_NAME_MEMCACHED); \
+		docker run -d --name $(LXC_NAME_MEMCACHED) -p 11211:11211 $(LXC_TAG_MEMCACHED)
+	make test-memcached
+	@docker rm -f $(LXC_NAME_MEMCACHED)
