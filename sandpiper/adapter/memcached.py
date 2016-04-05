@@ -2,6 +2,7 @@ import json
 
 try:
     from pymemcache.client.base import Client
+    from pymemcache.client.hash import HashClient
 except ImportError as e:
     raise ImportError('Failed to import "pymemcache" ({})'.format(e))
 
@@ -9,6 +10,13 @@ from .abstract import Abstract
 from .abstract import NotSupported
 
 def get_default_client(server_config = None):
+    if server_config and isinstance(server_config, list):
+        return HashClient(
+            server_config,
+            serializer   = serializer,
+            deserializer = deserializer
+        )
+
     return Client(
         server_config or ('127.0.0.1', 11211),
         serializer   = serializer,
