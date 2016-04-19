@@ -35,10 +35,14 @@ def deserializer(key, value, flags):
     if flags == 1:
         return actual_value
 
-    elif flags == 2:
+    if flags == 2:
         return json.loads(actual_value)
 
-    raise Exception("Unknown serialization format")
+    # If all else fail, the deserializer will forcefully decode the object.
+    try:
+        return json.loads(actual_value)
+    except Exception as e:
+        return actual_value
 
 class Memcached(Abstract):
     def __init__(self, storage = None, namespace = None, delimiter = ':'):

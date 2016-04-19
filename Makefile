@@ -2,8 +2,15 @@ PY=python3
 TEST_FLAGS=-f
 PY_TEST=nosetests -x -w .
 LXC_TAG_DYNAMODB=sandpiper.test.dynamodb
+
 LXC_TAG_MEMCACHED=memcached:latest
 LXC_NAME_MEMCACHED=sandpiper.memcached
+
+LXC_TAG_REDIS_V2=redis:2
+LXC_NAME_REDIS_V2=sandpiper.redis.v2
+
+LXC_TAG_REDIS_LATEST=redis:latest
+LXC_NAME_REDIS_LATEST=sandpiper.redis.latest
 
 package:
 	$(PY) setup.py sdist
@@ -23,6 +30,9 @@ test-dynamodb:
 
 test-memcached:
 	$(PY_TEST) tests/test_memcached.py
+
+test-xredis:
+	$(PY_TEST) tests/test_xredis.py
 
 test-dynamodb-docker:
 	docker build -t $(LXC_TAG_DYNAMODB) lxc/dynamodb && \
@@ -48,3 +58,15 @@ test-memcached-docker:
 		docker run -d --name $(LXC_NAME_MEMCACHED) -p 11211:11211 $(LXC_TAG_MEMCACHED)
 	make test-memcached
 	@docker rm -f $(LXC_NAME_MEMCACHED)
+
+test-xredis-v2-docker:
+	@docker rm -f $(LXC_NAME_REDIS_V2); \
+		docker run -d --name $(LXC_NAME_REDIS_V2) -p 6379:6379 $(LXC_TAG_REDIS_V2)
+	make test-xredis
+	@docker rm -f $(LXC_NAME_REDIS_V2)
+
+test-xredis-latest-docker:
+	@docker rm -f $(LXC_NAME_REDIS_LATEST); \
+		docker run -d --name $(LXC_NAME_REDIS_LATEST) -p 6379:6379 $(LXC_TAG_REDIS_LATEST)
+	make test-xredis
+	@docker rm -f $(LXC_NAME_REDIS_LATEST)

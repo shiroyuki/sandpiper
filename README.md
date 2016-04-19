@@ -7,7 +7,7 @@ A simple generic key-value store interface library.
 * Python 3.4 or newer
 * **boto3** for AWS DynamoDB (optional)
 * **pymemcache** for Memcached (optional)
-* **redis** for Redis (optional, future)
+* **redis** for Redis (optional, recommended to also install **hiredis**)
 * **pymongo** for MongoDB (optional, future)
 
 *Note: this may work with Python 2.7 but it will not be tested.*
@@ -45,7 +45,7 @@ driver = DynamoDB(ddb)
 #### For Memcached
 
 ```python
-from sandpiper.adapter.memcached import Memcached, get_default_client
+from sandpiper.adapter import Memcached, create_memcached_client
 
 connection_list = [
     ('c1.shiroyuki.com', 11211),
@@ -53,8 +53,17 @@ connection_list = [
     # ...
 ]
 
-client = get_default_client(connection_list)
+client = create_memcached_client(connection_list)
 driver = Memcached(client, namespace = 'default', delimiter = ':')
+```
+
+#### For Redis
+
+```python
+from sandpiper.adapter import Redis, create_redis_client
+
+client = create_redis_client(host = 'localhost') # same arguments as redis.ConnectionPool
+driver = Redis(client, namespace = 'default', delimiter = ':')
 ```
 
 ### How to use it
@@ -82,8 +91,8 @@ del storage['user.1']
 * In-memory/Python's built-in dictionary type (default)
 * AWS DynamoDB
 * Memcached
+* Redis with **hiredis**
 
 ## Soon-to-be Supported Storage Types
 
-* Redis
 * MongoDB
