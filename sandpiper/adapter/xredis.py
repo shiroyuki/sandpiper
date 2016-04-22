@@ -55,8 +55,17 @@ class Adapter(Abstract):
 
         self._storage.delete(actual_key)
 
-    def find(self, *args, **kwargs):
-        raise NotSupported('Not yet implemented')
+    def find(self, pattern='*', only_keys=False):
+        if only_keys:
+            return [
+                key.decode('utf-8')
+                for key in self._storage.keys(pattern)
+            ]
+
+        return {
+            key: self.get(key)
+            for key in self._storage.keys(pattern)
+        }
 
     def _actual_key(self, key):
         if not self._namespace:
