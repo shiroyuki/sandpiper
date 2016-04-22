@@ -1,4 +1,5 @@
 import json
+import re
 
 try:
     import redis
@@ -26,6 +27,8 @@ class Adapter(Abstract):
         self._storage   = storage
         self._namespace = namespace or ''
         self._delimiter = delimiter
+
+        self._re_namespace = re.compile('^{}:'.format(namespace))
 
         self._auto_json_convertion = auto_json_convertion
 
@@ -57,15 +60,18 @@ class Adapter(Abstract):
 
     def find(self, pattern='*', only_keys=False):
         actual_pattern = self._actual_key(pattern)
+
+        keys = [
+            self._re_namespace.sub('', key.decode('utf-8'))
+            for key in self._storage.keys(actual_pattern)
+        ]
+
         if only_keys:
-            return [
-                key.decode('utf-8')
-                for key in self._storage.keys(actual_pattern)
-            ]
+            return keys
 
         return {
-            key.decode('utf-8'): self.get(key)
-            for key in self._storage.keys(actual_pattern)
+            key: self.get(key)
+            for key in keys
         }
 
     def _actual_key(self, key):
