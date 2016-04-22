@@ -56,15 +56,16 @@ class Adapter(Abstract):
         self._storage.delete(actual_key)
 
     def find(self, pattern='*', only_keys=False):
+        actual_pattern = self._actual_key(pattern)
         if only_keys:
             return [
                 key.decode('utf-8')
-                for key in self._storage.keys(pattern)
+                for key in self._storage.keys(actual_pattern)
             ]
 
         return {
-            key: self.get(key)
-            for key in self._storage.keys(pattern)
+            key.decode('utf-8'): self.get(key)
+            for key in self._storage.keys(actual_pattern)
         }
 
     def _actual_key(self, key):
