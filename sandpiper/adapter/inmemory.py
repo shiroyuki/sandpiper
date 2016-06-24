@@ -2,6 +2,7 @@ from .abstract import Abstract
 from .abstract import NotSupported
 
 class InMemory(Abstract):
+    """ Adapter for In-memory configuration """
     def __init__(self, storage=None):
         self._storage = storage or {}
 
@@ -11,7 +12,7 @@ class InMemory(Abstract):
 
         return self._storage[key]
 
-    def set(self, key, value):
+    def set(self, key, value, ttl = None):
         self._storage[key] = value
 
     def remove(self, key):

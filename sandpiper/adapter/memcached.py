@@ -45,6 +45,7 @@ def deserializer(key, value, flags):
         return actual_value
 
 class Memcached(Abstract):
+    """ Adapter for Memcached """
     def __init__(self, storage = None, namespace = None, delimiter = ':'):
         self._storage   = storage
         self._namespace = namespace or ''
@@ -55,7 +56,7 @@ class Memcached(Abstract):
 
         return self._storage.get(actual_key)
 
-    def set(self, key, value):
+    def set(self, key, value, ttl = None):
         actual_key = self._actual_key(key)
 
         self._storage.set(actual_key, value)

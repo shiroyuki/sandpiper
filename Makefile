@@ -60,12 +60,14 @@ test-memcached-docker:
 	@docker rm -f $(LXC_NAME_MEMCACHED)
 
 test-xredis-v2-docker:
+	@docker pull $(LXC_TAG_REDIS_V2)
 	@docker rm -f $(LXC_NAME_REDIS_V2); \
 		docker run -d --name $(LXC_NAME_REDIS_V2) -p 6379:6379 $(LXC_TAG_REDIS_V2)
 	make test-xredis
 	@docker rm -f $(LXC_NAME_REDIS_V2)
 
 test-xredis-latest-docker:
+	@docker pull $(LXC_TAG_REDIS_LATEST)
 	@docker rm -f $(LXC_NAME_REDIS_LATEST); \
 		docker run -d --name $(LXC_NAME_REDIS_LATEST) -p 6379:6379 $(LXC_TAG_REDIS_LATEST)
 	make test-xredis

@@ -9,8 +9,8 @@ class Storage(DictionaryAccess):
     def get(self, key):
         return self.driver.get(key)
 
-    def set(self, key, value):
-        self.driver.set(key, value)
+    def set(self, key, value, ttl = None):
+        self.driver.set(key, value, ttl)
 
     def remove(self, key):
         self.driver.remove(key)

@@ -9,6 +9,8 @@ except ImportError as e:
 from .abstract import Abstract
 
 class DynamoDB(Abstract):
+    """ Adapter for DynamoDB """
+
     __primary_key     = 'identifier'; # the main identifier
     __secondary_key   = 'search_key'; # the search key (the content is the same as the PK)
     __value_attribute = 'value';
@@ -24,7 +26,7 @@ class DynamoDB(Abstract):
 
         return item[self.__value_attribute] if item else None
 
-    def set(self, key, value):
+    def set(self, key, value, ttl = None):
         item = {
             self.__value_attribute: self._prepare_for_setter(value),
         }

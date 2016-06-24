@@ -23,6 +23,7 @@ def create_client(**pool_args):
     return redis.Redis(connection_pool=pool)
 
 class Adapter(Abstract):
+    """ Adapter for Redis """
     def __init__(self, storage = None, namespace = None, delimiter = ':', auto_json_convertion = True):
         self._storage   = storage
         self._namespace = namespace or ''
@@ -44,7 +45,7 @@ class Adapter(Abstract):
 
         return value
 
-    def set(self, key, value):
+    def set(self, key, value, ttl = None):
         actual_key = self._actual_key(key)
         encoded    = value
 
@@ -52,6 +53,9 @@ class Adapter(Abstract):
             encoded = json.dumps(value)
 
         self._storage.set(actual_key, encoded)
+
+        if ttl != None and ttl > 0:
+            self._storage.expire(actual_key, ttl)
 
     def remove(self, key):
         actual_key = self._actual_key(key)

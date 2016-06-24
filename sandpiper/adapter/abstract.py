@@ -2,7 +2,7 @@ class Abstract(object):
     def get(self, key):
         raise NotImplementedError()
 
-    def set(self, key, value):
+    def set(self, key, value, ttl = None):
         raise NotImplementedError()
 
     def remove(self, key):
