@@ -11,5 +11,14 @@ class Abstract(object):
     def find(self, pattern):
         raise NotImplementedError()
 
+
 class NotSupported(RuntimeWarning):
     """ Unsupported Warning """
+
+
+class NonJSONStringError(RuntimeError):
+    """ Non-JSON String Error """
+
+
+class SearchError(RuntimeError):
+    """ Search Error """

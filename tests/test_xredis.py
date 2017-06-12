@@ -1,9 +1,11 @@
+import os
+
 from sandpiper.util           import StandardTests
 from sandpiper.adapter.xredis import Adapter, create_client
 
 class FunctionalDefault(StandardTests):
     def get_driver(self):
-        storage = create_client(host = 'localhost')
+        storage = create_client(host = 'localhost', port = os.getenv('LXC_REDIS_PORT') or 6379)
 
         return Adapter(storage)
 

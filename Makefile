@@ -12,6 +12,9 @@ LXC_NAME_REDIS_V2=sandpiper.redis.v2
 LXC_TAG_REDIS_LATEST=redis:latest
 LXC_NAME_REDIS_LATEST=sandpiper.redis.latest
 
+LXC_REDIS_TEST_PORT=7000
+LXC_REDIS_LOCAL_PORT=6379
+
 package:
 	$(PY) setup.py sdist
 
@@ -62,13 +65,13 @@ test-memcached-docker:
 test-xredis-v2-docker:
 	@docker pull $(LXC_TAG_REDIS_V2)
 	@docker rm -f $(LXC_NAME_REDIS_V2); \
-		docker run -d --name $(LXC_NAME_REDIS_V2) -p 6379:6379 $(LXC_TAG_REDIS_V2)
+		docker run -d --name $(LXC_NAME_REDIS_V2) -p $(LXC_REDIS_TEST_PORT):$(LXC_REDIS_LOCAL_PORT) $(LXC_TAG_REDIS_V2)
 	make test-xredis
 	@docker rm -f $(LXC_NAME_REDIS_V2)
 
 test-xredis-latest-docker:
 	@docker pull $(LXC_TAG_REDIS_LATEST)
 	@docker rm -f $(LXC_NAME_REDIS_LATEST); \
-		docker run -d --name $(LXC_NAME_REDIS_LATEST) -p 6379:6379 $(LXC_TAG_REDIS_LATEST)
+		docker run -d --name $(LXC_NAME_REDIS_LATEST) -p $(LXC_REDIS_TEST_PORT):$(LXC_REDIS_LOCAL_PORT) $(LXC_TAG_REDIS_LATEST)
 	make test-xredis
 	@docker rm -f $(LXC_NAME_REDIS_LATEST)

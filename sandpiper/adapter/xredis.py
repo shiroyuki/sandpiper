@@ -1,5 +1,6 @@
 import json
 import re
+import sys
 
 try:
     import redis
@@ -7,9 +8,12 @@ except ImportError as e:
     raise ImportError('Failed to import "redis" ({})'.format(e))
 
 from .abstract import Abstract
-from .abstract import NotSupported
+from .abstract import NonJSONStringError, SearchError
 
 import logging
+
+require_backward_compatibility = sys.version_info.major == 2
+
 
 def create_client(**pool_args):
     if 'port' not in pool_args:
@@ -21,6 +25,7 @@ def create_client(**pool_args):
     pool = redis.ConnectionPool(**pool_args)
 
     return redis.Redis(connection_pool=pool)
+
 
 class Adapter(Abstract):
     """ Adapter for Redis """
@@ -40,10 +45,23 @@ class Adapter(Abstract):
         if not value:
             return value
 
-        if self._auto_json_convertion:
-            return json.loads(value.decode('utf-8'))
+        if not self._auto_json_convertion:
+            return value
 
-        return value
+        try:
+            if not require_backward_compatibility and not isinstance(value, bytes):
+                raise NonJSONStringError('Unable to decode the value (preemptive, py3, bytes)', value)
+
+            if isinstance(value, bytes):
+                return json.loads(value.decode('utf-8'))
+
+            # NOTE This is mainly to support Python 2.
+            if not isinstance(value, str):
+                raise NonJSONStringError('Unable to decode the value (preemptive)', value)
+
+            return json.loads(value)
+        except json.decoder.JSONDecodeError:
+            raise NonJSONStringError('Unable to decode the value (final)', value)
 
     def set(self, key, value, ttl = None):
         actual_key = self._actual_key(key)
@@ -62,21 +80,41 @@ class Adapter(Abstract):
 
         self._storage.delete(actual_key)
 
-    def find(self, pattern='*', only_keys=False):
+    def find(self, pattern='*', only_keys=False, ignore_non_decodable=True):
         actual_pattern = self._actual_key(pattern)
 
-        keys = [
-            self._re_namespace.sub('', key.decode('utf-8'))
-            for key in self._storage.keys(actual_pattern)
-        ]
+        keys = []
+
+        if require_backward_compatibility:
+            keys.extend([
+                self._re_namespace.sub('', key)
+                for key in self._storage.keys(actual_pattern)
+            ])
+        else:
+            keys.extend([
+                self._re_namespace.sub('', key.decode('utf-8'))
+                for key in self._storage.keys(actual_pattern)
+                if isinstance(key, bytes)
+            ])
 
         if only_keys:
             return keys
 
-        return {
-            key: self.get(key)
-            for key in keys
-        }
+        result = {}
+
+        for key in keys:
+            data = None
+
+            try:
+                data = self.get(key)
+            except NonJSONStringError:
+                if not ignore_non_decodable:
+                    raise SearchError()
+                # endif
+
+            result[key] = data
+
+        return result
 
     def _actual_key(self, key):
         if not self._namespace:
