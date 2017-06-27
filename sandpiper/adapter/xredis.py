@@ -18,13 +18,16 @@ require_backward_compatibility = sys.version_info.major == 2
 
 
 def create_client(**pool_args):
+    if 'url' in pool_args:
+        return redis.Redis(connection_pool = redis.BlockingConnectionPool.from_url(pool_args['url']))
+
     if 'port' not in pool_args:
         pool_args['port'] = 6379
 
     if 'host' not in pool_args:
         raise ValueError('"host" is not defined.')
 
-    pool = redis.ConnectionPool(**pool_args)
+    pool = redis.BlockingConnectionPool(**pool_args)
 
     return redis.Redis(connection_pool=pool)
 
