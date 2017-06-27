@@ -2,6 +2,8 @@ import json
 import re
 import sys
 
+from sandpiper.concurrency import KeyLocker
+
 try:
     import redis
 except ImportError as e:
@@ -38,9 +40,15 @@ class Adapter(Abstract):
 
         self._auto_json_convertion = auto_json_convertion
 
+        self._key_locker = KeyLocker()
+
+    @property
+    def api(self):
+        return self._storage
+
     def get(self, key):
         actual_key = self._actual_key(key)
-        value      = self._storage.get(actual_key)
+        value      = self._key_locker.synchronize(None, self._storage.get, actual_key)
 
         if not value:
             return value
@@ -65,12 +73,13 @@ class Adapter(Abstract):
 
     def set(self, key, value, ttl = None):
         actual_key = self._actual_key(key)
-        encoded    = value
+
+        encoded = value
 
         if self._auto_json_convertion:
             encoded = json.dumps(value)
 
-        self._storage.set(actual_key, encoded)
+        self._key_locker.synchronize(None, self._storage.set, actual_key, encoded)
 
         if ttl != None and ttl > 0:
             self._storage.expire(actual_key, ttl)
@@ -78,7 +87,7 @@ class Adapter(Abstract):
     def remove(self, key):
         actual_key = self._actual_key(key)
 
-        self._storage.delete(actual_key)
+        self._key_locker.synchronize(None, self._storage.delete, actual_key)
 
     def find(self, pattern='*', only_keys=False, ignore_non_decodable=True):
         actual_pattern = self._actual_key(pattern)
@@ -109,7 +118,7 @@ class Adapter(Abstract):
                 data = self.get(key)
             except NonJSONStringError:
                 if not ignore_non_decodable:
-                    raise SearchError()
+                    raise SearchError(pattern)
                 # endif
 
             result[key] = data
